@@ -1,0 +1,3 @@
+libcw - Android Custom Native Window library. It enables you to draw native window onto Android app's SurfaceTexture.
+Some tricks were seen in cnativewindow (android libhardware test) and FrameBufferNativeWindow class.
+
