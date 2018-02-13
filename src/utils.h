@@ -23,8 +23,6 @@
 #include "ipc.h"
 #include <system/window.h>
 #include <window.h>
-#define DBG utils_log_error("HERE! %s/%d\n", __FILE__, __LINE__)
-#define DDD DBG
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,6 +39,8 @@ void buffer_register_read_callback(void);
 void buffer_lock(ANativeWindowBuffer_t* buf, void** vaddr);
 void buffer_unlock(ANativeWindowBuffer_t* buf);
 
+void ACustomNativeWindow_read_control(int *fd);
+
 static inline void checkGlError(const char* op) {
 	GLint error;
     for (error = glGetError(); error; error = glGetError()) {
@@ -54,6 +54,7 @@ enum {
 	IPC_COMMAND_GET_GRAPHIC_BUFFER,
 	IPC_COMMAND_GET_GRAPHIC_BUFFER_FDS,
 	IPC_COMMAND_GET_SHARED_WINDOW_CONTROL,
+	IPC_COMMAND_GET_INPUT_QUEUE,
 };
 
 #ifdef __cplusplus

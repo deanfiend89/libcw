@@ -39,9 +39,11 @@ libcw_la_SOURCES = 	\
 	log.c \
 	buffer.c \
 	window.c \
+	input.c \
 	EGLUtils.cpp \
 	libancillary/fd_send.c \
-	libancillary/fd_recv.c
+	libancillary/fd_recv.c \
+	app-android.c
 
 
 #That is just a stub library and it is needed only to resolve linking problems. The real one is already placed on a target device

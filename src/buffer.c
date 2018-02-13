@@ -130,6 +130,7 @@ ANativeWindowBuffer_t* buffer_read(){
 		recvsock = ipc_connect();
 		usleep(1000*500);
 	}
+	utils_log_print("Buffer got...\n");
 	
 	ipc_command(recvsock, IPC_COMMAND_GET_GRAPHIC_BUFFER);
 	recv (recvsock, recv_buf, buf_size, 0);

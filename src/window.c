@@ -24,8 +24,13 @@
 #include <libancillary/ancillary.h>
 #include <sys/mman.h>
 #include <sys/errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "windowInternals.h"
 #include "utils.h"
+#define CW_API __attribute__((visibility("default")))
+
 
 static ACustomNativeWindow* current_shared_window;
 
@@ -93,7 +98,6 @@ int winQueueBuffer_DEPRECATED(struct ANativeWindow* window, struct ANativeWindow
 }
 
 int winPerform(struct ANativeWindow* window, int op, ... ){
-	//DBG;
 	ACustomNativeWindow *win = (ACustomNativeWindow*)window;
 	va_list ap;
 	va_start(ap, op);
@@ -142,7 +146,6 @@ int winPerform(struct ANativeWindow* window, int op, ... ){
 }
 
 int winQuery(const struct ANativeWindow* window, int what, int* value){
-	//DBG;
 	ACustomNativeWindow *win = (ACustomNativeWindow*)window;
 	switch (what) {
 	case NATIVE_WINDOW_WIDTH:
@@ -195,7 +198,7 @@ static void setFloatValue(float *ptr, float value){
 	memcpy (ptr, &value, sizeof(float));
 }
 
-EGLNativeWindowType ACustomNativeWindow_create(int w, int h){
+CW_API EGLNativeWindowType ACustomNativeWindow_create(int w, int h){
 	ACustomNativeWindow* win = malloc(sizeof(ACustomNativeWindow));
 	win->base.common.magic = ANDROID_NATIVE_WINDOW_MAGIC;
 	win->base.common.version = sizeof(ANativeWindow);
@@ -281,8 +284,54 @@ void ACustomNativeWindow_read_control(int *fd){
 	}	
 }
 
-CW_API int ACustomNativeWindow_frame_available(EGLNativeWindowType window) {
+
+//____________________________________________________//
+//  There are definitions of window listener methods  //
+//____________________________________________________//
+
+/*CW_API int ACustomNativeWindow_frame_available(EGLNativeWindowType window) {
 	ACustomNativeWindow* win = (ACustomNativeWindow*) window;
 	if (!win->control) return -1;
 	return win->control->frameAvailable;
+}*/
+
+CW_API void* ACustomNativeWindow_getListener(char* path){
+	ipc_set_connection_path(path);
+	
+	void* rrbuf;
+	rrbuf = buffer_read();
+	
+	ACustomNativeWindow_listener *listener = (ACustomNativeWindow_listener*) malloc(sizeof(ACustomNativeWindow_listener));
+
+	int controlFD;
+	ACustomNativeWindow_read_control(&controlFD);
+	listener->control = (windowControl*) mmap(NULL, sizeof(windowControl), PROT_READ | PROT_WRITE, MAP_SHARED, controlFD, 0);
+	if (listener->control == MAP_FAILED) {
+		utils_log_error("Failed to map shared window control\n");
+		return 0;
+	}
+	
+	memset(listener->pid, 0, 128);
+	sprintf(listener->pid, "/proc/%d", listener->control->parentPID);
+	glBindNativeBufferToTex(rrbuf);
+	return listener;
+}
+
+CW_API void ACustomNativeWindow_releaseListener(void *listener_ptr){
+	ACustomNativeWindow_listener *listener = (ACustomNativeWindow_listener*) listener_ptr;
+	munmap(listener->control, sizeof(windowControl));
+	free(listener);
+}
+
+CW_API int ACustomNativeWindow_frame_available(void* listener_ptr) {
+	ACustomNativeWindow_listener *listener = (ACustomNativeWindow_listener*) listener_ptr;
+	static struct stat sts;
+	//utils_log_error("listener is %p\n", listener);
+	//utils_log_error("pid is %s\n", listener->pid);
+	//utils_log_error("control is %p\n", listener->control);
+	if (stat(listener->pid, &sts) == -1 && errno == ENOENT) {
+		return CW_ERROR_PROCESS_DIED;
+	}
+	
+	return listener->control->frameAvailable;
 }

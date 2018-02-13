@@ -75,15 +75,6 @@ const GLfloat textureVertices[] = {
 	0.0f,  0.0f,
 };
 
-GLuint aload_shader(const char *shader_source, GLenum type){
-	GLuint  shader = glCreateShader(type);
-
-	glShaderSource(shader, 1, &shader_source, NULL);
-	glCompileShader(shader);
-
-	return shader;
-}
-
 static GLuint loadShader(GLenum shaderType, const char *pSource) {
     GLuint shader = glCreateShader(shaderType);
     if (shader) {
@@ -146,14 +137,13 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
 }
 
 GLuint shaderProgram;
-int glamor = 1;
 
 GLint position_loc;
 GLint texcoords_loc;
 GLint texture_loc;
 
 void shader_setup(void){
-	shaderProgram = createProgram(vertex_src, (glamor)?fragment_src:fragment_src_bgra);
+	shaderProgram = createProgram(vertex_src, fragment_src);
 
 	position_loc  = glGetAttribLocation  ( shaderProgram , "position" ); checkGlError("glGetAttribLocation");
 	texcoords_loc = glGetAttribLocation  ( shaderProgram , "texcoords" ); checkGlError("glGetAttribLocation");
@@ -164,16 +154,13 @@ void shader_setup(void){
 	}
 }
 
-void glDrawTex(GLuint texture){
+void glDrawTex(){
 	if (!shaderProgram) {
 		shader_setup();
 	}
 
-	glBindTexture(GL_TEXTURE_2D, texture); checkGlError("glBindTexture");
     glUseProgram(shaderProgram); checkGlError("glUseProgram");
 
-    glActiveTexture(GL_TEXTURE0); checkGlError("glActiveTexture");
-    glBindTexture(GL_TEXTURE_2D, texture); checkGlError("glBindTexture");
     glUniform1i(texture_loc, 0); checkGlError("glUniform1i");
 
     glVertexAttribPointer(position_loc, 2, GL_FLOAT, 0, 0, squareVertices); checkGlError("glVertexAttribPointer");

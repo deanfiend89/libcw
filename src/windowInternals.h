@@ -45,7 +45,12 @@ typedef struct {
 	ANativeWindowBuffer_t* buffers[0];
 } ACustomNativeWindow;
 
-void ACustomNativeWindow_read_control(int *fd);
+typedef struct {
+	windowControl* control;
+	char pid[128];
+	int input_queue;
+} ACustomNativeWindow_listener;
+
 
 #ifdef __cplusplus
 }

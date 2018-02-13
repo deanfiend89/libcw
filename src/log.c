@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <android/log.h>
 #include "utils.h"
 
 static int (*print)(const char*, ...);
@@ -30,6 +31,7 @@ void utils_log_print( const char* format, ... ) {
     if (print) print(format, args);
     else vfprintf(stdout, format, args);
     va_end(args);
+    __android_log_vprint(ANDROID_LOG_INFO, "libcw", format, args);
 }
 
 void utils_log_error( const char* format, ... ) {
@@ -38,6 +40,7 @@ void utils_log_error( const char* format, ... ) {
     if (error_print) print(format, args);
     else vfprintf(stderr, format, args);
     va_end(args);
+    __android_log_vprint(ANDROID_LOG_ERROR, "libcw", format, args);
 }
 
 void utils_log_set_print(int (*new_print)(const char*, ...)){

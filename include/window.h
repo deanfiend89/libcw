@@ -24,20 +24,22 @@ extern "C" {
 #endif
 
 #include <EGL/egl.h>
-#include <EGLUtils.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#define CW_API __attribute__((visibility("default")))
 
-CW_API EGLNativeWindowType ACustomNativeWindow_create(int w, int h);
-CW_API void ACustomNativeWindow_start_sharing(EGLNativeWindowType window);
-CW_API int ACustomNativeWindow_frame_available(EGLNativeWindowType window);
+void* ACustomNativeWindow_getListener(char* path);
+int ACustomNativeWindow_frame_available(void *listener_ptr);
+void ACustomNativeWindow_releaseListener(void *listener_ptr);
 
-CW_API void glBindNativeBufferToTex(EGLClientBuffer buffer);
+EGLNativeWindowType ACustomNativeWindow_create(int w, int h);
+void ACustomNativeWindow_start_sharing(EGLNativeWindowType window);
 
-CW_API void glDrawPixels(GLuint disp_id, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid * data);
-CW_API void glDrawTex(GLuint disp_id);
-CW_API GLuint createProgram(const char* pVertexSource, const char* pFragmentSource);
+void glBindNativeBufferToTex(EGLClientBuffer buffer);
+void glDrawTex();
+
+//Errors
+#define CW_ERROR_PROCESS_DIED -10
+#define CW_ERROR_INPUT_UNIMPLEMENTED -11
 
 #ifdef __cplusplus
 }

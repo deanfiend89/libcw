@@ -28,10 +28,6 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-
-//#include <utils/Timers.h>
-
-//#include <ui/GraphicBuffer.h>
 #include <WindowSurface.h>
 #include <EGLUtils.h>
 
@@ -112,16 +108,13 @@ static int initGLES(){
 	return 0;
 }
 
-GraphicBuffer* grbuf;
 ANativeWindowBuffer_t* buf;
 GLuint bufferTexture;
-
-extern int glamor;
 
 int main(int argc, char** argv){
 	initGLES();
 	
-	ANativeWindowBuffer* rrbuf;
+	/*ANativeWindowBuffer* rrbuf;
 	rrbuf = buffer_read();
 	
 	int controlFD;
@@ -133,20 +126,40 @@ int main(int argc, char** argv){
 	}
 
 	printf("ParentPID is %d\n", control->parentPID);
-	GLuint rootTexture;
 	
 	//glGenTextures(1, &rootTexture);
 	glBindTexture(GL_TEXTURE_2D, rootTexture);
 	glBindNativeBufferToTex(rrbuf);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);*/
 	
-	for (;;){
+	/*for (;;){
 			control->frameAvailable = 0;
-			glDrawTex(rootTexture);
+			glDrawTex();
 			eglSwapBuffers (dpy, surface);  // get the rendered buffer to the screen
 		if (getpgid(control->parentPID) < 0) { printf("Server exited, closing...\n"); exit(0); }
 
+	}*/
+	GLuint rootTexture;
+	void *listener;
+	
+	glActiveTexture(GL_TEXTURE0);DBG;
+    glBindTexture(GL_TEXTURE_2D, rootTexture);DBG;
+    listener = ACustomNativeWindow_getListener("/dev/shm/sock-shared");DBG;
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);DBG;
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);DBG;
+    int err;
+	while (1)
+	{
+		err = ACustomNativeWindow_frame_available(listener);
+		switch(err){
+			case 1: glDrawTex(); break;
+			case CW_ERROR_PROCESS_DIED: utils_log_error("Parent process died: exiting...\n"); exit(0); break;
+			default: utils_log_error("Unknown response\n");
+		}
+		eglSwapBuffers (dpy, surface); 
+		//utils_log_print("err = %d\n", err);
+		//if (getpgid(control->parentPID) < 0) { printf("Server exited, closing...\n"); exit(0);
 	}
 	return 1;
 }

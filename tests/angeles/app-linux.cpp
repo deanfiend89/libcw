@@ -49,6 +49,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <window.h>
+#include <window_input.h>
 
 #include <EGL/egl.h>
 #include <GLES/gl.h>
@@ -194,6 +195,8 @@ int main(int argc, char *argv[])
         samples = atoi( argv[1] );
         printf("Multisample enabled: GL_SAMPLES = %u\n", samples);
     }
+    
+    input_create_queue();
 
     if (!initGraphics(samples))
     {
@@ -219,6 +222,12 @@ int main(int argc, char *argv[])
         eglSwapBuffers(sEglDisplay, sEglSurface);
         checkEGLErrors();
         frameCount++;
+        
+        uint8_t x, y, action;
+        if(input_event_available()) {
+			input_event_read(&x, &y, &action);
+			printf("X: %d Y: %d A: %d\n", x, y, action);
+		}
     }
 
     gettimeofday(&timeTemp, NULL);
